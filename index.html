@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Be My Valentine?</title>
+    <style>
+      :root {
+        --heart-color: #d02020;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #ffe4e1;
+        font-family: "Arial", sans-serif;
+        overflow: hidden;
+      }
+
+      /* Main Card: Starts hidden and lower */
+      #container {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        background: white;
+        padding: 2.5rem;
+        border-radius: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        max-width: 90vw;
+
+        /* Slow transition settings */
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity 2s ease-out,
+          transform 2s ease-out;
+        pointer-events: none; /* Prevents clicking buttons while invisible */
+      }
+
+      /* Triggered via JS for a slow reveal */
+      #container.visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      h1 {
+        color: #d02020;
+        font-size: 2.2rem;
+        margin-bottom: 5px;
+      }
+
+      #guiltMessage {
+        color: #ff4d6d;
+        height: 30px;
+        font-style: italic;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        font-weight: bold;
+      }
+
+      .gif-container img {
+        width: 100%;
+        max-width: 250px;
+        height: 200px;
+        object-fit: contain;
+        border-radius: 15px;
+        margin-bottom: 1.5rem;
+      }
+
+      .buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+      }
+
+      button {
+        padding: 12px 28px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      #yesBtn {
+        background-color: #ff4d6d;
+        color: white;
+      }
+      #noBtn {
+        background-color: #888;
+        color: white;
+      }
+
+      /* Overlay Styles */
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffe4e1; /* Matching body color */
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 1s ease;
+      }
+
+      /* Floating Hearts */
+      .heart {
+        position: absolute;
+        bottom: -50px;
+        background-color: var(--heart-color);
+        width: 20px;
+        height: 20px;
+        transform: rotate(45deg);
+        border: 2px solid white;
+        animation: float 5s linear infinite;
+        z-index: 1;
+      }
+
+      .heart::before,
+      .heart::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: inherit;
+        border-radius: 50%;
+      }
+      .heart::before {
+        top: -10px;
+        left: 0;
+      }
+      .heart::after {
+        left: -10px;
+        top: 0;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0) rotate(45deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-110vh) rotate(45deg);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay">
+      <h2 style="color: #d02020">I have a question for you...</h2>
+      <button
+        onclick="enterSite()"
+        style="
+          padding: 15px 30px;
+          font-size: 1.2rem;
+          border-radius: 50px;
+          border: none;
+          background: #ff4d6d;
+          color: white;
+          cursor: pointer;
+        "
+      >
+        Open
+      </button>
+    </div>
+
+    <div id="container">
+      <h1>Will you be my Valentine?</h1>
+      <div id="guiltMessage"></div>
+
+      <audio id="bgMusic" loop>
+        <source
+          src="music/beabadoobee_-_Glue_Song_Official_Music_Video_128KBPS.mp4"
+          type="audio/mpeg"
+        />
+      </audio>
+
+      <div class="gif-container">
+        <img
+          id="mainGif"
+          src="gif/Will you be my valentine.gif"
+          alt="Puppy Eyes"
+        />
+      </div>
+
+      <div class="buttons">
+        <button id="yesBtn" onclick="celebrate()">Yes!</button>
+        <button id="noBtn" onclick="handleNo()">No</button>
+      </div>
+    </div>
+
+    <script>
+      let scale = 1;
+      let index = 0;
+      let heartsActive = false;
+
+      const phrases = [
+        "Really sure??",
+        "Think again!",
+        "Last chance!",
+        "Surely not?",
+        "You're breaking my heart ;(",
+        "I'm gonna cry...",
+        "Think again",
+        "Please baby",
+        "Just click the red one!",
+      ];
+      const sadGifs = [
+        "gif/confused.gif",
+        "gif/begging.gif",
+        "gif/please3.gif",
+        "gif/sad.gif",
+        "gif/breaking my heart.gif",
+        "gif/im gonna cry.gif",
+        "gif/think again.gif",
+        "gif/begging.gif",
+        "gif/angry.gif",
+      ];
+
+      function enterSite() {
+        const overlay = document.getElementById("overlay");
+        const container = document.getElementById("container");
+        const music = document.getElementById("bgMusic");
+
+        // 1. Hide overlay and start music/hearts
+        overlay.style.opacity = "0";
+        setTimeout(() => (overlay.style.display = "none"), 1000);
+
+        music.play();
+        heartsActive = true; // Start generating hearts
+
+        // 2. Delay the appearance of the "Will you be my Valentine" card
+        setTimeout(() => {
+          container.classList.add("visible");
+        }, 10000); // 1.5 second delay so hearts appear first
+      }
+
+      function handleNo() {
+        const yesBtn = document.getElementById("yesBtn");
+        const message = document.getElementById("guiltMessage");
+        const gif = document.getElementById("mainGif");
+
+        scale += 0.25;
+        yesBtn.style.transform = `scale(${scale})`;
+        message.innerText = phrases[index % phrases.length];
+        gif.src = sadGifs[index % sadGifs.length];
+        index++;
+
+        const container = document.getElementById("container");
+        container.style.transform = "translateX(5px)";
+        setTimeout(() => (container.style.transform = "translateX(-5px)"), 50);
+        setTimeout(() => (container.style.transform = "translateX(0)"), 100);
+      }
+
+      function celebrate() {
+        document.querySelector("h1").innerHTML =
+          "YAYYY I knew you would say Yes;) I love you❤️";
+        document.getElementById("guiltMessage").style.display = "none";
+        document.getElementById("mainGif").src = "gif/YAYY.gif";
+        document.querySelector(".buttons").style.display = "none";
+        document.documentElement.style.setProperty("--heart-color", "#ff4d6d");
+        document.body.style.backgroundColor = "#ffc0cb";
+      }
+
+      function createHeart() {
+        if (!heartsActive) return; // Don't show hearts until card is opened
+
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.animationDuration = Math.random() * 2 + 3 + "s";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+      }
+      setInterval(createHeart, 300);
+    </script>
+  </body>
+</html>
