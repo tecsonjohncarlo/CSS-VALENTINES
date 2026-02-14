@@ -206,6 +206,23 @@
       let index = 0;
       let heartsActive = false;
 
+      const allGifs = [
+        "gif/confused.gif",
+        "gif/begging.gif",
+        "gif/please3.gif",
+        "gif/sad.gif",
+        "gif/breaking my heart.gif",
+        "gif/im gonna cry.gif",
+        "gif/think again.gif",
+        "gif/begging.gif",
+        "gif/angry.gif",
+      ];
+
+      allGifs.forEach((gifPath) => {
+        const img = new Image();
+        img.src = gifPath;
+      });
+
       const phrases = [
         "Really sure??",
         "Think again!",
