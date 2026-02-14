@@ -180,7 +180,7 @@
       <h1>Will you be my Valentine?</h1>
       <div id="guiltMessage"></div>
 
-      <audio id="bgMusic" loop>
+      <audio id="bgMusic" loop preload="auto">
         <source
           src="music/beabadoobee_-_Glue_Song_Official_Music_Video_128KBPS.mp4"
           type="audio/mpeg"
@@ -206,6 +206,8 @@
       let index = 0;
       let heartsActive = false;
 
+      const music = document.getElementById("bgMusic");
+      music.load(); // Forces the browser to start buffering the audio
       const allGifs = [
         "gif/confused.gif",
         "gif/begging.gif",
